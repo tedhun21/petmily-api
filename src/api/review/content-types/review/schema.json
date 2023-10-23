@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reviews",
+  "info": {
+    "singularName": "review",
+    "pluralName": "reviews",
+    "displayName": "Review",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "body": {
+      "type": "text"
+    },
+    "reviewPhotos": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images", "files", "videos", "audios"]
+    },
+    "star": {
+      "type": "integer",
+      "max": 5,
+      "min": 0
+    },
+    "reservation": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::reservation.reservation",
+      "inversedBy": "review"
+    },
+    "pets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pet.pet",
+      "mappedBy": "review"
+    }
+  }
+}
