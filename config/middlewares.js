@@ -8,11 +8,5 @@ module.exports = [
   "strapi::session",
   "strapi::favicon",
   "strapi::public",
-  {
-    name: "strapi::cors",
-    config: {
-      origin: ["https://petmily.shop", "http://localhost:3000"],
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
-    },
-  },
+  "strapi::cors",
 ];
