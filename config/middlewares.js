@@ -11,7 +11,7 @@ module.exports = [
   {
     name: "strapi::cors",
     config: {
-      origin: ["https://petmily.shop"],
+      origin: ["https://petmily.shop", "http://localhost:3000"],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
     },
   },
