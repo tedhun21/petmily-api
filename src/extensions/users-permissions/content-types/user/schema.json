@@ -83,28 +83,33 @@
       "target": "api::pet.pet",
       "mappedBy": "user"
     },
-    "journals": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::journal.journal",
-      "mappedBy": "user"
-    },
     "reviews": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::review.review",
       "mappedBy": "user"
     },
+    "photo": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
     "reservations": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::reservation.reservation",
-      "mappedBy": "user"
+      "mappedBy": "client"
     },
-    "photo": {
-      "allowedTypes": ["images", "files", "videos", "audios"],
-      "type": "media",
-      "multiple": false
+    "reservations_petsitter": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::reservation.reservation",
+      "mappedBy": "petsitter"
     }
   }
 }

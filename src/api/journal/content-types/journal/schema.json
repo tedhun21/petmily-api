@@ -13,26 +13,24 @@
   "pluginOptions": {},
   "attributes": {
     "body": {
-      "type": "text",
-      "maxLength": 255
+      "type": "string"
     },
     "photos": {
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": ["images", "files", "videos", "audios"]
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
     },
     "reservation": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::reservation.reservation",
-      "mappedBy": "journal"
-    },
-    "pets": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "required": true,
-      "mappedBy": "journal"
+      "inversedBy": "journal"
     }
   }
 }

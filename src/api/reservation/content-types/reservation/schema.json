@@ -37,13 +37,7 @@
       ],
       "required": true
     },
-    "journal": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::journal.journal",
-      "inversedBy": "reservation"
-    },
-    "user": {
+    "client": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
@@ -60,6 +54,18 @@
       "relation": "oneToMany",
       "target": "api::pet.pet",
       "mappedBy": "reservation"
+    },
+    "journal": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::journal.journal",
+      "mappedBy": "reservation"
+    },
+    "petsitter": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "reservations_petsitter"
     }
   }
 }

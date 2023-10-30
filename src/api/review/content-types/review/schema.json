@@ -15,11 +15,16 @@
     "body": {
       "type": "text"
     },
-    "reviewPhotos": {
+    "photos": {
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": ["images", "files", "videos", "audios"]
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
     },
     "star": {
       "type": "integer",
