@@ -17,7 +17,7 @@
     },
     "photos": {
       "type": "media",
-      "multiple": true,
+      "multiple": false,
       "required": false,
       "allowedTypes": [
         "images",
@@ -36,12 +36,6 @@
       "relation": "oneToOne",
       "target": "api::reservation.reservation",
       "inversedBy": "review"
-    },
-    "pets": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::pet.pet",
-      "mappedBy": "review"
     }
   }
 }

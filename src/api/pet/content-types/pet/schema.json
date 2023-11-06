@@ -68,12 +68,6 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "pets"
     },
-    "review": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::review.review",
-      "inversedBy": "pets"
-    },
     "reservation": {
       "type": "relation",
       "relation": "manyToOne",
