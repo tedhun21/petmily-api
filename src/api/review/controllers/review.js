@@ -210,8 +210,6 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
     const { reservationId, body, star } = JSON.parse(ctx.request.body.data);
     const files = ctx.request.files;
 
-    console.log(files);
-
     // 후기는 예약과 연결되어있기 때문에 예약 먼저 찾아준다.
     const reservation = await strapi.entityService.findOne(
       "api::reservation.reservation",
@@ -262,9 +260,9 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
 
   async update(ctx) {
     const reviewId = +ctx.request.params.id;
-    const { reservationId } = ctx.request.body;
+    const { reservationId, body, star } = JSON.parse(ctx.request.body.data);
+    const files = ctx.request.files;
 
-    // console.log(ctx.request.files);
     const reservation = await strapi.entityService.findOne(
       "api::reservation.reservation",
       reservationId,
@@ -276,19 +274,8 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
       }
     );
 
-    const review = await strapi.entityService.findOne(
-      "api::review.review",
-      reviewId,
-      {
-        populate: { photos: true },
-      }
-    );
-
     // 유저가 이 예약을 가지고 있고, 작성된 review가 있어야 수정할 수 있다.
     // params로 들어온 reviewId랑 reservation.review랑 일치해야 한다.
-    // console.log({ reservation });
-    // console.log(review.photos);
-
     if (!reservation.review) {
       return ctx.badRequest("리뷰를 먼저 등록해주세요.");
     } else if (
@@ -302,17 +289,20 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
           reviewId,
           {
             data: {
-              ...ctx.request.body,
-              // photos: [...review.photos, ctx.request.files.photos],
+              body,
+              star,
+              reservation: reservationId,
             },
+            files: { photos: files.files },
           }
         );
-        ctx.send("Updated Review Success.");
+        ctx.send("Update Review Success");
       } catch (e) {
         console.log(e);
       }
     }
   },
+
   async delete(ctx) {
     const { id: reviewId } = ctx.params;
 
@@ -336,11 +326,11 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
     }
     if (ctx.state.user.id === review.reservation.client.id && review) {
       try {
-        const deleteReview = await strapi.entityService.delete(
+        const deletedReview = await strapi.entityService.delete(
           "api::review.review",
           reviewId
         );
-        ctx.send("Delete Review Success.");
+        ctx.send({ message: "Delete Review Success", id: deletedReview.id });
       } catch (e) {
         console.log(e);
       }

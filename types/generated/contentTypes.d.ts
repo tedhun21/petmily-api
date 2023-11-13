@@ -543,6 +543,11 @@ export interface ApiReviewReview extends Schema.CollectionType {
       'oneToOne',
       'api::reservation.reservation'
     >;
+    user: Attribute.Relation<
+      'api::review.review',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -882,6 +887,13 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::reservation.reservation'
     >;
+    body: Attribute.Text &
+      Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    possibleTimeStart: Attribute.Time;
+    possibleTimeEnd: Attribute.Time;
+    possibleDay: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

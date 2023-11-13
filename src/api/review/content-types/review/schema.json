@@ -17,7 +17,7 @@
     },
     "photos": {
       "type": "media",
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "allowedTypes": [
         "images",
@@ -36,6 +36,12 @@
       "relation": "oneToOne",
       "target": "api::reservation.reservation",
       "inversedBy": "review"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "reviews"
     }
   }
 }

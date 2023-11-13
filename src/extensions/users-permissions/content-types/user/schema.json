@@ -90,14 +90,15 @@
       "mappedBy": "user"
     },
     "photo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "reservations": {
       "type": "relation",
@@ -110,6 +111,19 @@
       "relation": "oneToMany",
       "target": "api::reservation.reservation",
       "mappedBy": "petsitter"
+    },
+    "body": {
+      "type": "text",
+      "maxLength": 255
+    },
+    "possibleTimeStart": {
+      "type": "time"
+    },
+    "possibleTimeEnd": {
+      "type": "time"
+    },
+    "possibleDay": {
+      "type": "string"
     }
   }
 }
