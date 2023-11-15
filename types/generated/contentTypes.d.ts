@@ -463,7 +463,6 @@ export interface ApiReservationReservation extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    reservationDay: Attribute.Date & Attribute.Required;
     reservationTimeStart: Attribute.Time & Attribute.Required;
     reservationTimeEnd: Attribute.Time & Attribute.Required;
     address: Attribute.String;
@@ -501,6 +500,8 @@ export interface ApiReservationReservation extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+    body: Attribute.String;
+    reservationDate: Attribute.Date;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -871,11 +872,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::pet.pet'
     >;
-    reviews: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::review.review'
-    >;
     photo: Attribute.Media;
     reservations: Attribute.Relation<
       'plugin::users-permissions.user',
@@ -894,6 +890,13 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     possibleTimeStart: Attribute.Time;
     possibleTimeEnd: Attribute.Time;
     possibleDay: Attribute.String;
+    possibleLocation: Attribute.String;
+    possiblePetType: Attribute.Enumeration<['CAT', 'DOG', 'DOGCAT']>;
+    reviews: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::review.review'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

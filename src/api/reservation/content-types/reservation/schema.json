@@ -12,10 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "reservationDay": {
-      "type": "date",
-      "required": true
-    },
     "reservationTimeStart": {
       "type": "time",
       "required": true
@@ -66,6 +62,12 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "reservations_petsitter"
+    },
+    "body": {
+      "type": "string"
+    },
+    "reservationDate": {
+      "type": "date"
     }
   }
 }

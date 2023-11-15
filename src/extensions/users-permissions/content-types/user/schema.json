@@ -83,12 +83,6 @@
       "target": "api::pet.pet",
       "mappedBy": "user"
     },
-    "reviews": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::review.review",
-      "mappedBy": "user"
-    },
     "photo": {
       "type": "media",
       "multiple": false,
@@ -124,6 +118,23 @@
     },
     "possibleDay": {
       "type": "string"
+    },
+    "possibleLocation": {
+      "type": "string"
+    },
+    "possiblePetType": {
+      "type": "enumeration",
+      "enum": [
+        "CAT",
+        "DOG",
+        "DOGCAT"
+      ]
+    },
+    "reviews": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::review.review",
+      "mappedBy": "user"
     }
   }
 }
