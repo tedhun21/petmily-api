@@ -14,53 +14,36 @@
   "attributes": {
     "type": {
       "type": "enumeration",
-      "enum": [
-        "CAT",
-        "DOG"
-      ],
-      "required": true
+      "enum": ["CAT", "DOG"],
+      "required": true,
+      "private": true
     },
     "name": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "age": {
-      "type": "integer",
-      "required": true,
-      "max": 40
+      "type": "integer"
     },
     "species": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "weight": {
-      "type": "decimal",
-      "required": true,
-      "max": 100
+      "type": "decimal"
     },
     "body": {
-      "type": "text",
-      "required": false,
-      "maxLength": 255
+      "type": "text"
     },
     "male": {
-      "type": "boolean",
-      "required": true
+      "type": "boolean"
     },
     "neutering": {
-      "type": "boolean",
-      "required": true
+      "type": "boolean"
     },
     "file": {
       "type": "media",
-      "multiple": false,
+      "multiple": true,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "user": {
       "type": "relation",

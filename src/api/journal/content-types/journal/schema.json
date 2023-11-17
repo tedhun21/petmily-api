@@ -13,18 +13,13 @@
   "pluginOptions": {},
   "attributes": {
     "body": {
-      "type": "string"
+      "type": "text"
     },
     "photos": {
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "reservation": {
       "type": "relation",
