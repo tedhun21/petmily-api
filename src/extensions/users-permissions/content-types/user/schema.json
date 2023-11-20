@@ -67,11 +67,9 @@
     },
     "nickName": {
       "type": "string",
-      "required": true
-    },
-    "phone": {
-      "type": "biginteger",
-      "required": true
+      "required": true,
+      "maxLength": 10,
+      "minLength": 2
     },
     "address": {
       "type": "text",
@@ -100,12 +98,6 @@
       "target": "api::reservation.reservation",
       "mappedBy": "client"
     },
-    "reservations_petsitter": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::reservation.reservation",
-      "mappedBy": "petsitter"
-    },
     "body": {
       "type": "text",
       "maxLength": 255
@@ -117,7 +109,8 @@
       "type": "time"
     },
     "possibleDay": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 5
     },
     "possibleLocation": {
       "type": "string"
@@ -130,11 +123,27 @@
         "DOGCAT"
       ]
     },
-    "reviews": {
+    "reservations_petsitter": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::review.review",
-      "mappedBy": "user"
+      "target": "api::reservation.reservation",
+      "mappedBy": "petsitter"
+    },
+    "phone": {
+      "type": "string",
+      "required": true
+    },
+    "likes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "liked"
+    },
+    "liked": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "likes"
     }
   }
 }

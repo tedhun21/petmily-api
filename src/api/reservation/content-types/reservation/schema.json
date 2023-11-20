@@ -21,7 +21,8 @@
       "required": true
     },
     "address": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "progress": {
       "type": "enumeration",
@@ -57,17 +58,19 @@
       "target": "api::journal.journal",
       "mappedBy": "reservation"
     },
+    "body": {
+      "type": "text",
+      "maxLength": 255
+    },
+    "reservationDate": {
+      "type": "date",
+      "required": true
+    },
     "petsitter": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "reservations_petsitter"
-    },
-    "body": {
-      "type": "string"
-    },
-    "reservationDate": {
-      "type": "date"
     }
   }
 }

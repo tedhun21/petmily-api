@@ -14,23 +14,22 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
     if (!ctx.state.user) {
       ctx.send("에러");
     } else {
-      // console.log(ctx.state.user);
       try {
         const userId = ctx.state.user.id;
-        console.log(userId);
 
         const journals = await strapi.entityService.findMany(
           "api::journal.journal",
           {
+            sort: { id: "desc" },
             populate: {
               photos: true,
               reservation: {
                 populate: {
                   client: true,
-                  petsitter: true,
+                  petsitter: { populate: { photo: true } },
                   pets: {
                     populate: {
-                      file: true,
+                      photo: true,
                     },
                   },
                 },
@@ -47,12 +46,16 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
           }
         );
 
-        // console.log(journals);
-
         const modifiedJournals = journals.map((journal) => {
           const petNames = journal.reservation.pets.map((pet) => pet.name);
-
-          const petPhotos = journal.reservation.pets.map((pet) => pet.file);
+          const petPhotos = journal.reservation.pets.map((pet) =>
+            pet.photo ? pet.photo.formats.thumbnail.url : null
+          );
+          const journalPhotos = journal.photos
+            ? journal.photos.map(
+                (photo) => photo && photo.formats.thumbnail.url
+              )
+            : null;
 
           return {
             journalId: journal.id,
@@ -62,11 +65,13 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
             createdAt: journal.createdAt,
             lastModifiedAt: journal.updatedAt,
             body: journal.body,
-            photos: journal.photos,
+            photos: journalPhotos,
             petNames: petNames,
             petPhotos: petPhotos,
             petsitterName: journal.reservation.petsitter.username,
-            // petsitterPhoto: journal.reservation.petsitter.photo,
+            petsitterPhoto:
+              journal.reservation.petsitter.photo &&
+              journal.reservation.petsitter.photo.formats.thumbnail.url,
           };
         });
 
@@ -84,7 +89,6 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
     } else {
       try {
         const userId = ctx.state.user.id;
-        // console.log(userId);
 
         const { id } = ctx.params;
         const journal = await strapi.entityService.findOne(
@@ -99,7 +103,7 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
                   petsitter: true,
                   pets: {
                     populate: {
-                      file: true,
+                      photo: true,
                     },
                   },
                 },
@@ -107,14 +111,15 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
             },
           }
         );
-        console.log(journal);
 
         if (
           userId === journal.reservation.client.id ||
           userId === journal.reservation.petsitter.id
         ) {
           const petNames = journal.reservation.pets.map((pet) => pet.name);
-          const petPhotos = journal.reservation.pets.map((pet) => pet.file);
+          const petPhotos = journal.reservation.pets.map(
+            (pet) => pet.photo.formats.thumbnail.url
+          );
 
           const response = {
             journalId: journal.id,
@@ -128,7 +133,9 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
             petNames: petNames,
             petPhotos: petPhotos,
             petsitterName: journal.reservation.petsitter.username,
-            // petsitterPhoto
+            petsitterPhoto:
+              journal.reservation.petsitter.photo &&
+              journal.reservation.petsitter.photo.formats.thumbnail.url,
           };
 
           ctx.send(response);
@@ -143,13 +150,8 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
 
   // 케어 일지 등록
   async create(ctx) {
-    // console.log(ctx.request.body);
     const { reservationId, body } = JSON.parse(ctx.request.body.data);
-    // console.log(reservationId, body);
-
-    // console.log(ctx.request);
     const files = ctx.request.files;
-    console.log(files);
 
     const reservation = await strapi.entityService.findOne(
       "api::reservation.reservation",
@@ -158,10 +160,8 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
         populate: { journal: true },
       }
     );
-    console.log(reservation);
 
     const existingJournal = reservation.journal;
-    console.log(existingJournal);
 
     if (existingJournal) {
       ctx.send("이미 작성한 일지가 존재합니다.");
@@ -178,13 +178,11 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
         try {
           const data = {
             body: body,
-
             reservation: reservationId,
           };
 
           const newJournal = await strapi.entityService.create(
             "api::journal.journal",
-            // { data }
             { data, files: { photos: files.files } }
           );
 
@@ -206,7 +204,6 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
     } else {
       try {
         const userId = ctx.state.user.id;
-
         const journalId = +ctx.params.id;
 
         const journal = await strapi.entityService.findOne(
@@ -224,10 +221,11 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
         );
 
         if (userId === journal.reservation.petsitter.id) {
+          const files = ctx.request.files;
+
           try {
-            // const file = ctx.request.files;
             const { body } = JSON.parse(ctx.request.body.data);
-            console.log(body);
+
             const updatedJournal = await strapi.entityService.update(
               "api::journal.journal",
               journalId,
@@ -235,7 +233,7 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
                 data: {
                   body,
                 },
-                // files: { photos: file.files },
+                files: { photos: files.file },
               }
             );
 

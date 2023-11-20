@@ -13,7 +13,8 @@
   "pluginOptions": {},
   "attributes": {
     "body": {
-      "type": "text"
+      "type": "text",
+      "maxLength": 500
     },
     "photos": {
       "type": "media",
@@ -29,19 +30,14 @@
     "star": {
       "type": "integer",
       "max": 5,
-      "min": 0
+      "min": 0,
+      "required": true
     },
     "reservation": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::reservation.reservation",
       "inversedBy": "review"
-    },
-    "user": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "reviews"
     }
   }
 }

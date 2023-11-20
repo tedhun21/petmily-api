@@ -64,7 +64,7 @@ module.exports = (plugin) => {
         nickName: petsitter.nickName,
         phone: petsitter.phone,
         address: petsitter.address,
-        photo: petsitter.photo.formats.thumbnail.url,
+        photo: petsitter.photo && petsitter.photo.formats.thumbnail.url,
         possiblePetType: petsitter.possiblePetType,
         possibleLocation: petsitter.possibleLocation
           ? petsitter.possibleLocation
@@ -91,8 +91,7 @@ module.exports = (plugin) => {
 
   // 회원정보 등록
   plugin.controllers.auth.register = async (ctx) => {
-    const { provider } = ctx.request.body;
-
+    console.log(ctx.request.body);
     try {
       const newMember = await strapi.entityService.create(
         "plugin::users-permissions.user",
@@ -100,7 +99,7 @@ module.exports = (plugin) => {
           data: {
             ...ctx.request.body,
             username: ctx.request.body.name,
-            provider: provider || "local",
+            provider: "local",
             role: {
               connect: [ctx.request.body.petsitterBoolean ? 3 : 2],
             },
@@ -116,11 +115,9 @@ module.exports = (plugin) => {
 
   // 회원정보 수정
   plugin.controllers.user.update = async (ctx) => {
-    if (!ctx.state.user) {
+    if (!ctx.state.user || ctx.state.user.role.type !== "public") {
       return ctx.badRequest("권한이 없습니다.");
     } else if (ctx.state.user.id === +ctx.params.id) {
-      console.log(ctx.request.body);
-
       const updatedUser = await strapi.entityService.update(
         "plugin::users-permissions.user",
         ctx.state.user.id,
@@ -130,14 +127,13 @@ module.exports = (plugin) => {
           },
         }
       );
-
       ctx.send({ data: "success modify member" });
     }
   };
 
   // 회원정보 삭제
   plugin.controllers.user.destroy = async (ctx) => {
-    if (!ctx.state.user) {
+    if (!ctx.state.user && ctx.state.userid !== +ctx.params.id) {
       return ctx.badRequest("권한이 없습니다.");
     } else if (ctx.state.user.id === +ctx.params.id) {
       try {
@@ -148,6 +144,7 @@ module.exports = (plugin) => {
         ctx.send({ data: "success delete member" });
       } catch (e) {
         console.log(e);
+        ctx.badRequest("fail delete member");
       }
     }
   };
@@ -189,6 +186,7 @@ module.exports = (plugin) => {
         "api::reservation.reservation",
         {
           filters: {
+            petsitter: { id: { $eq: ctx.state.user.id } },
             reservationDate: {
               $lte: new Date(
                 new Date().getFullYear(),
@@ -210,6 +208,7 @@ module.exports = (plugin) => {
         "api::reservation.reservation",
         {
           filters: {
+            petsitter: { id: { $eq: ctx.state.user.id } },
             reservationDate: {
               $lte: new Date(
                 new Date().setDate(
@@ -233,6 +232,7 @@ module.exports = (plugin) => {
         "api::reservation.reservation",
         {
           filters: {
+            petsitter: { id: { $eq: ctx.state.user.id } },
             reservationDate: {
               $eq: new Date().toISOString().substring(0, 10),
             },
@@ -244,7 +244,10 @@ module.exports = (plugin) => {
       const confirmedReservations = await strapi.entityService.findPage(
         "api::reservation.reservation",
         {
-          filters: { progress: { $eq: "RESERVATION_CONFIRMED" } },
+          filters: {
+            petsitter: { id: { $eq: ctx.state.user.id } },
+            progress: { $eq: "RESERVATION_CONFIRMED" },
+          },
         }
       );
 
@@ -252,7 +255,10 @@ module.exports = (plugin) => {
       const requestReservations = await strapi.entityService.findPage(
         "api::reservation.reservation",
         {
-          filters: { progress: { $eq: "RESERVATION_REQUEST" } },
+          filters: {
+            petsitter: { id: { $eq: ctx.state.user.id } },
+            progress: { $eq: "RESERVATION_REQUEST" },
+          },
         }
       );
 
@@ -289,37 +295,30 @@ module.exports = (plugin) => {
   };
 
   // 펫시터 프로필 수정
-
   plugin.controllers.petsitter.update = async (ctx) => {
+    if (!ctx.state.user) {
+      return ctx.badRequest("로그인 해주세요.");
+    }
+
+    const isPetsitter = ctx.state.user.role.type === "petsitter";
+
+    if (!isPetsitter) {
+      return ctx.badRequest("You are not authorized to access this resource.");
+    }
+
+    if (ctx.state.user.id !== +ctx.params.petsitterId) {
+      return ctx.badRequest(
+        "You are not authorized to update information for this member."
+      );
+    }
+
     try {
-      if (!ctx.state.user) {
-        return ctx.badRequest("로그인 해주세요.");
-      }
-
-      const isPetsitter = ctx.state.user.role.type === "petsitter";
-
-      if (!isPetsitter) {
-        return ctx.badRequest(
-          "You are not authorized to access this resource."
-        );
-      }
-
-      if (ctx.state.user.id !== +ctx.params.memberId) {
-        return ctx.badRequest(
-          "You are not authorized to update information for this member."
-        );
-      }
-
       const updatedPetsitterInfo = await strapi.entityService.update(
         "plugin::users-permissions.user",
-        +ctx.params.memberId,
+        +ctx.params.petsitterId,
         {
           data: {
-            possiblePetType: ctx.request.body.possiblePetType,
-            possibleDay: ctx.request.body.possibleDay,
-            possibleTimeStart: ctx.request.body.possibleTimeStart,
-            possibleTimeEnd: ctx.request.body.possibleTimeEnd,
-            possibleLocation: ctx.request.body.possibleLocation,
+            ...ctx.request.body,
           },
         }
       );
@@ -334,56 +333,111 @@ module.exports = (plugin) => {
   // 펫시터 찜하기
   plugin.controllers.user.like = async (ctx) => {
     if (!ctx.state.user) {
-      return ctx.badRequest("로그인 해주세요.");
+      return ctx.badRequest("권한이 없습니다.");
+    } else if (ctx.state.user.role.type !== "public") {
+      return ctx.badRequest("찜하기 권한이 없습니다.");
+    } else if (ctx.state.user.id === +ctx.params.id) {
+      return ctx.badRequest("자신을 찜할 수 없습니다.");
     }
+    {
+      try {
+        const currentUser = await strapi.entityService.findOne(
+          "plugin::users-permissions.user",
+          ctx.state.user.id,
+          {
+            populate: {
+              likes: true,
+            },
+          }
+        );
 
-    try {
-      const currentUser = await strapi.entityService.findOne(
-        "plugin::users-permissions.user",
-        ctx.state.user.id,
-        {
-          populate: {
-            likes: true,
-          },
+        const likesIndex = currentUser.likes.findIndex(
+          (likes) => likes.id === +ctx.params.petsitterId
+        );
+
+        let isLiked;
+
+        if (likesIndex !== -1) {
+          // 찜 목록에 있다면 찜 해제
+          isLiked = false;
+        } else {
+          // 찜 목록에 없다면 찜하기
+          isLiked = true;
         }
-      );
 
-      if (ctx.state.user.role.type === "petsitter") {
-        return ctx.badRequest("찜하기 권한이 없습니다.");
+        // 사용자 정보 업데이트
+        await strapi.entityService.update(
+          "plugin::users-permissions.user",
+          +ctx.state.user.id,
+          {
+            data: {
+              likes: [...currentUser.likes, +ctx.params.petsitterId],
+            },
+          }
+        );
+
+        ctx.send({ data: isLiked }); // 찜 상태 반환
+      } catch (e) {
+        console.error(e);
       }
-      if (ctx.state.user.id === +ctx.params.id) {
-        return ctx.badRequest("자신을 찜할 수 없습니다.");
+    }
+  };
+
+  // 찜한 펫시터 목록 조회
+  plugin.controllers.user.favorite = async (ctx) => {
+    if (!ctx.state.user) {
+      return ctx.badRequest("권한이 없습니다");
+    } else {
+      try {
+        const user = await strapi.entityService.findOne(
+          "plugin::users-permissions.user",
+          ctx.state.user.id,
+          {
+            populate: {
+              likes: {
+                populate: {
+                  reservations_petsitter: {
+                    populate: { review: { fields: ["star"] } },
+                  },
+                },
+              },
+            },
+          }
+        );
+
+        const modifiedUsers = user.likes.map((user) => {
+          return {
+            petsitterId: user.id,
+            email: user.email,
+            name: user.username,
+            nickName: user.nickName,
+            phone: user.phone,
+            address: user.address,
+            photo: user.photo && user.photo.formats.thumbnail.url,
+            possiblePetType: user.possiblePetType,
+            possibleLocation: user.possibleLocation.split(","),
+            possibleDay: user.possibleDay,
+            possibleTimeStart: user.possibleTimeStart,
+            possibleTimeEnd: user.possibleTimeEnd,
+            body: user.body,
+            star:
+              Math.ceil(
+                (user.reservations_petsitter
+                  .map((reservation) => reservation.review.star)
+                  .reduce((acc, cur) => acc + cur) /
+                  user.reservations_petsitter.length) *
+                  10
+              ) / 10,
+            reviewCount: user.reservations_petsitter.filter(
+              (reservation) => reservation.review
+            ).length,
+          };
+        });
+
+        ctx.send(modifiedUsers);
+      } catch (e) {
+        console.log(e);
       }
-
-      const likesIndex = currentUser.likes.findIndex(
-        (likes) => likes.id === +ctx.params.id
-      );
-      let isliked;
-
-      if (likesIndex !== -1) {
-        // 찜 목록에 있다면 찜 해제
-        currentUser.likes.splice(likesIndex, 1);
-        isliked = false;
-      } else {
-        // 찜 목록에 없다면 찜하기
-        currentUser.likes.push({ id: +ctx.params.id });
-        isliked = true;
-      }
-
-      // 사용자 정보 업데이트
-      await strapi.entityService.update(
-        "plugin::users-permissions.user",
-        +ctx.state.user.id,
-        {
-          data: {
-            likes: currentUser.likes,
-          },
-        }
-      );
-
-      ctx.send({ data: isliked }); // 찜 상태 반환
-    } catch (e) {
-      console.error(e);
     }
   };
 
@@ -447,7 +501,7 @@ module.exports = (plugin) => {
   // 펫시터 프로필 수정
   plugin.routes["content-api"].routes.push({
     method: "PUT",
-    path: "/members/petsitters/:memberId",
+    path: "/members/petsitters/:petsitterId",
     handler: "petsitter.update",
     config: {
       prefix: "",
@@ -457,8 +511,18 @@ module.exports = (plugin) => {
   // 펫시터 찜하기 route
   plugin.routes["content-api"].routes.push({
     method: "PUT",
-    path: "/members/favorite/:id",
+    path: "/members/favorite/:petsitterId",
     handler: "user.like",
+    config: {
+      prefix: "",
+    },
+  });
+
+  // 찜한 펫시터 목록 조회
+  plugin.routes["content-api"].routes.push({
+    method: "GET",
+    path: "/members/favorite",
+    handler: "user.favorite",
     config: {
       prefix: "",
     },
