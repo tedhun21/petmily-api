@@ -77,7 +77,7 @@ module.exports = (plugin) => {
           Math.ceil(
             (reviews.results
               .map((review) => review.star)
-              .reduce((acc, cur) => acc + cur) /
+              .reduce((acc, cur) => acc + cur, 0) /
               reviews.results.length) *
               10
           ) / 10,
@@ -265,17 +265,19 @@ module.exports = (plugin) => {
       const formattedPetsitterInfo = {
         petsitterId: petsitterInfo.id,
         possiblePetType: petsitterInfo.possiblePetType || "DOGCAT",
-        possibleLocation: petsitterInfo.possibleLocation
-          ? petsitterInfo.possibleLocation.split(",")
-          : [],
-        possibleDay: petsitterInfo.possibleDay,
-        possibleTimeStart: petsitterInfo.possibleTimeStart,
-        possibleTimeEnd: petsitterInfo.possibleTimeEnd,
+        possibleLocation:
+          petsitterInfo.possibleLocation &&
+          petsitterInfo.possibleLocation.split(","),
+        possibleDay: petsitterInfo.possibleDay && petsitterInfo.possibleDay,
+        possibleTimeStart:
+          petsitterInfo.possibleTimeStart && petsitterInfo.possibleTimeStart,
+        possibleTimeEnd:
+          petsitterInfo.possibleTimeEnd && petsitterInfo.possibleTimeEnd,
         star:
           Math.ceil(
             (reviews.results
               .map((review) => review.star)
-              .reduce((acc, cur) => acc + cur) /
+              .reduce((acc, cur) => acc + cur, 0) /
               reviews.results.length) *
               10
           ) / 10,
@@ -424,7 +426,7 @@ module.exports = (plugin) => {
               Math.ceil(
                 (user.reservations_petsitter
                   .map((reservation) => reservation.review.star)
-                  .reduce((acc, cur) => acc + cur) /
+                  .reduce((acc, cur) => acc + cur, 0) /
                   user.reservations_petsitter.length) *
                   10
               ) / 10,
