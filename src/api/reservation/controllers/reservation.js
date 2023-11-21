@@ -464,11 +464,47 @@ module.exports = createCoreController(
                   $contains: pets.map((pet) => pet.type),
                 },
               },
+              populate: {
+                reservations_petsitter: {
+                  populate: { review: { fields: ["star"] } },
+                },
+                photo: true,
+              },
             }
           );
 
-          ctx.send(petsitters);
-        } catch (e) {}
+          console.log(petsitters);
+
+          const modifiedPetsitter = petsitters.map((petsitter) => ({
+            petsitterId: petsitter.id,
+            name: petsitter.username,
+            nickName: petsitter.nickName,
+            photo: petsitter.photo && petsitter.photo.formats.thumbnail.url,
+            possibleDay: petsitter.possibleDay,
+            possibleTimeStart: petsitter.possibleTimeStart,
+            possibleTimeEnd: petsitter.possibleTimeEnd,
+            star:
+              Math.ceil(
+                (petsitter.reservations_petsitter
+                  .map(
+                    (reservation) =>
+                      reservation.review && reservation.review.star
+                  )
+                  .reduce((acc, cur) => acc + cur, 0) /
+                  petsitter.reservations_petsitter
+                    .map((reservation) => reservation.review)
+                    .filter((review) => review).length) *
+                  10
+              ) / 10,
+            reviewCount: petsitter.reservations_petsitter.map(
+              (reservation) => reservation.review
+            ).length,
+          }));
+
+          ctx.send(modifiedPetsitter);
+        } catch (e) {
+          console.log(e);
+        }
       }
     },
 
