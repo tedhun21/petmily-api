@@ -91,7 +91,6 @@ module.exports = (plugin) => {
 
   // 회원정보 등록
   plugin.controllers.auth.register = async (ctx) => {
-    console.log(ctx.request.body);
     try {
       const newMember = await strapi.entityService.create(
         "plugin::users-permissions.user",
@@ -264,7 +263,8 @@ module.exports = (plugin) => {
 
       const formattedPetsitterInfo = {
         petsitterId: petsitterInfo.id,
-        possiblePetType: petsitterInfo.possiblePetType || "DOGCAT",
+        possiblePetType:
+          petsitterInfo.possiblePetType && petsitterInfo.possiblePetType,
         possibleLocation:
           petsitterInfo.possibleLocation &&
           petsitterInfo.possibleLocation.split(","),

@@ -112,6 +112,7 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
           }
         );
 
+        // filter $or 사용해도 될듯
         if (
           userId === journal.reservation.client.id ||
           userId === journal.reservation.petsitter.id
@@ -148,7 +149,7 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
     }
   },
 
-  // 케어 일지 등록
+  // 케어 일지 등록 v
   async create(ctx) {
     const { reservationId, body } = JSON.parse(ctx.request.body.data);
     const files = ctx.request.files;
@@ -157,47 +158,42 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
       "api::reservation.reservation",
       reservationId,
       {
-        populate: { journal: true },
+        populate: { journal: true, petsitter: { fields: ["username"] } },
       }
     );
 
-    const existingJournal = reservation.journal;
-
-    if (existingJournal) {
-      ctx.send("이미 작성한 일지가 존재합니다.");
+    if (reservation.journal) {
+      return ctx.badRequest("이미 작성한 일지가 존재합니다.");
+    } else if (reservation.progress !== "FINISH_CARING") {
+      return ctx.badRequest("예약이 종료되지 않았습니다.");
+    } else if (reservation.petsitter.id !== ctx.state.user.id) {
+      return ctx.badRequest("예약과 일치하지 않는 펫시터입니다.");
     } else {
-      const reservation = await strapi.entityService.findOne(
-        "api::reservation.reservation",
-        reservationId,
-        {
-          populate: { petsitter: { fields: ["id", "username"] } },
-        }
-      );
+      try {
+        let data = {
+          data: { body, reservation: reservationId },
+        };
 
-      if (reservation.petsitter.id === ctx.state.user.id) {
-        try {
-          const data = {
-            body: body,
-            reservation: reservationId,
+        if (Object.keys(files).length !== 0) {
+          data = {
+            data: { body, reservation: reservationId },
+            files: { photos: files.file },
           };
-
-          const newJournal = await strapi.entityService.create(
-            "api::journal.journal",
-            { data, files: { photos: files.files } }
-          );
-
-          const response = "Create Journal Success";
-          ctx.send(response);
-        } catch (e) {
-          console.log(e);
         }
-      } else {
-        ctx.send("예약과 일치하지 않는 펫시터입니다.");
+
+        const newJournal = await strapi.entityService.create(
+          "api::journal.journal",
+          data
+        );
+
+        ctx.send("Create Journal Success");
+      } catch (e) {
+        console.log(e);
       }
     }
   },
 
-  // 케어 일지 수정
+  // 케어 일지 수정 (사진 문제: 덮어 쓰이는게 아니라 추가됨)
   async update(ctx) {
     if (!ctx.state.user) {
       ctx.send("에러");
@@ -226,19 +222,24 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
           try {
             const { body } = JSON.parse(ctx.request.body.data);
 
+            let data = {
+              data: { body },
+            };
+
+            if (Object.keys(files).length !== 0) {
+              data = {
+                data: { body },
+                files: { photos: files.file },
+              };
+            }
+
             const updatedJournal = await strapi.entityService.update(
               "api::journal.journal",
               journalId,
-              {
-                data: {
-                  body,
-                },
-                files: { photos: files.file },
-              }
+              data
             );
 
-            const response = "Update Success";
-            ctx.send(response);
+            ctx.send("Update Success");
           } catch (e) {
             console.log(e);
           }

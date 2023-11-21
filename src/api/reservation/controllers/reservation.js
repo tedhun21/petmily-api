@@ -49,7 +49,6 @@ module.exports = createCoreController(
               limit: +ctx.request.query.page * +ctx.request.query.size || 0,
             }
           );
-          // ctx.send(reservations);
 
           const modifiedReservations = reservations.map((reservations) => ({
             reservationId: reservations.id,
@@ -180,7 +179,7 @@ module.exports = createCoreController(
       }
     },
 
-    // 예약 1개 조회
+    // 예약 1개 조회 v
     async findOne(ctx) {
       if (!ctx.state.user) {
         ctx.send("에러");
@@ -272,7 +271,7 @@ module.exports = createCoreController(
       }
     },
 
-    // 예약 생성
+    // 예약 생성 v
     async create(ctx) {
       if (!ctx.state.user) {
         ctx.badRequest("로그인을 해주세요");
@@ -301,7 +300,7 @@ module.exports = createCoreController(
       }
     },
 
-    //펫시터 예약 확정
+    //펫시터 예약 확정 v
     async confirmReservation(ctx) {
       if (!ctx.state.user) {
         ctx.send("에러");
@@ -343,7 +342,7 @@ module.exports = createCoreController(
       }
     },
 
-    // 펫시터 예약 취소
+    // 펫시터 예약 취소 v
     async petsitterCancel(ctx) {
       if (!ctx.state.user) {
         ctx.send("에러");
@@ -361,8 +360,6 @@ module.exports = createCoreController(
               },
             }
           );
-
-          console.log(reservation);
 
           if (
             userId === reservation.petsitter.id &&
@@ -384,7 +381,7 @@ module.exports = createCoreController(
       }
     },
 
-    // 멤버 예약 취소
+    // 멤버 예약 취소 v
     async memberCancel(ctx) {
       if (!ctx.state.user) {
         ctx.send("에러");
@@ -411,7 +408,7 @@ module.exports = createCoreController(
               const response = await strapi.entityService.update(
                 "api::reservation.reservation",
                 reservationId,
-                { data: { ...reservation, progress: "RESERVATION_CANCELLED" } }
+                { data: { progress: "RESERVATION_CANCELLED" } }
               );
               ctx.send("cancelled");
             } catch (e) {
@@ -428,7 +425,7 @@ module.exports = createCoreController(
     // 예약정보에 맞는 펫시터 조회
     async findPossiblePetsitter(ctx) {
       if (!ctx.state.user) {
-        ctx.badRequest("로그인이 필요합니다.");
+        ctx.badRequest("권한이 없습니다.");
       } else if (ctx.state.user.role.type === "public") {
         const {
           reservationDate,
@@ -475,38 +472,45 @@ module.exports = createCoreController(
       }
     },
 
-    // 펫시터 예약일정 조회
+    // 펫시터 예약일정 조회 v
     async sitterSchedule(ctx) {
       const { petsitterId } = ctx.params;
 
-      try {
-        const reservations = await strapi.entityService.findMany(
-          "api::reservation.reservation",
-          {
-            sort: { reservationDate: "asc" },
-            filters: {
-              petsitter: { id: { $eq: petsitterId } },
-              reservationDate: {
-                $gte: new Date().toISOString().substring(0, 10),
+      if (!ctx.state.user) {
+        return ctx.badRequest("권한이 없습니다.");
+      } else if (ctx.state.user.id === +petsitterId) {
+        try {
+          const reservations = await strapi.entityService.findMany(
+            "api::reservation.reservation",
+            {
+              sort: { reservationDate: "asc" },
+              filters: {
+                petsitter: { id: { $eq: petsitterId } },
+                reservationDate: {
+                  $gte: new Date().toISOString().substring(0, 10),
+                },
+                progress: {
+                  $notIn: ["RESERVATION_CANCELLED", "FINISH_CARING"],
+                },
               },
-              progress: {
-                $notIn: ["RESERVATION_CANCELLED", "FINISH_CARING"],
-              },
-            },
-          }
-        );
+              start:
+                (+ctx.request.query.page - 1) * +ctx.request.query.size || 0,
+              limit: +ctx.request.query.page * +ctx.request.query.size || 0,
+            }
+          );
 
-        const transformedReservations = reservations.map((reservation) => ({
-          reservationId: reservation.id,
-          reservationDate: reservation.reservationDate,
-          reservationTimeStart: reservation.reservationTimeStart,
-          reservationTimeEnd: reservation.reservationTimeEnd,
-          progress: reservation.progress,
-        }));
+          const transformedReservations = reservations.map((reservation) => ({
+            reservationId: reservation.id,
+            reservationDate: reservation.reservationDate,
+            reservationTimeStart: reservation.reservationTimeStart,
+            reservationTimeEnd: reservation.reservationTimeEnd,
+            progress: reservation.progress,
+          }));
 
-        ctx.send(transformedReservations);
-      } catch (error) {
-        console.error(error);
+          ctx.send(transformedReservations);
+        } catch (error) {
+          console.error(error);
+        }
       }
     },
   })

@@ -46,12 +46,12 @@ module.exports = createCoreController("api::pet.pet", ({ strapi }) => ({
     }
   },
 
+  // 특정 pet 조회
   async findOne(ctx) {
     const { id: petId } = ctx.params;
     if (!ctx.state.user) {
       ctx.badRequest("로그인 해주세요");
     }
-    // 특정 pet 조회
     try {
       const pet = await strapi.entityService.findOne("api::pet.pet", +petId, {
         populate: { user: true, photo: true },
@@ -82,42 +82,66 @@ module.exports = createCoreController("api::pet.pet", ({ strapi }) => ({
     }
   },
 
+  // pet 생성
   async create(ctx) {
-    // pet 생성
-    try {
-      const { type, name, age, species, weight, body, male, neutering } =
-        JSON.parse(ctx.request.body.data);
-      const files = ctx.request.files; // 파일 업로드
+    if (!ctx.state.user) {
+      return ctx.badRequest("권한이 없습니다.");
+    } else {
+      try {
+        const { type, name, age, species, weight, body, male, neutering } =
+          JSON.parse(ctx.request.body.data);
 
-      const newpet = await strapi.entityService.create("api::pet.pet", {
-        data: {
-          name,
-          type,
-          age,
-          weight,
-          neutering,
-          male,
-          species,
-          body,
-          user: ctx.state.user.id,
-        },
-        files: {
-          photo: files.file,
-        },
-      });
+        const files = ctx.request.files; // 파일 업로드
 
-      ctx.send("Create Pet Success");
-    } catch (e) {
-      console.error(e);
-      return ctx.badRequest("pet 생성 실패");
+        let data = {
+          data: {
+            name,
+            type,
+            age,
+            weight,
+            neutering,
+            male,
+            species,
+            body,
+            user: ctx.state.user.id,
+          },
+        };
+
+        if (Object.keys(files).length !== 0) {
+          data = {
+            data: {
+              name,
+              type,
+              age,
+              weight,
+              neutering,
+              male,
+              species,
+              body,
+              user: ctx.state.user.id,
+            },
+            files: {
+              photo: files.file,
+            },
+          };
+        }
+
+        const newpet = await strapi.entityService.create("api::pet.pet", data);
+
+        ctx.send("Create Pet Success");
+      } catch (e) {
+        console.error(e);
+        return ctx.badRequest("pet 생성 실패");
+      }
     }
   },
 
+  // pet 수정
   async update(ctx) {
-    // pet 수정
     try {
       const petId = ctx.params.id; // pet ID 가져오기
-      const data = JSON.parse(ctx.request.body.data); // 수정할 데이터 가져오기
+      const { name, type, age, weight, neutering, male, species, body } =
+        JSON.parse(ctx.request.body.data); // 수정할 데이터 가져오기
       const files = ctx.request.files; // 파일 데이터 가져오기
 
       // pet ID로 pet 조회
@@ -133,25 +157,24 @@ module.exports = createCoreController("api::pet.pet", ({ strapi }) => ({
         return ctx.throw(400, "해당하는 pet이 없습니다.");
       }
 
+      let data = {
+        data: { name, type, age, weight, neutering, male, species, body },
+      };
+
+      if (Object.keys(files).length !== 0) {
+        data = {
+          data: { name, type, age, weight, neutering, male, species, body },
+          files: {
+            photo: files.file,
+          },
+        };
+      }
+
       //pet 수정
       const updatedPet = await strapi.entityService.update(
         "api::pet.pet",
         petId,
-        {
-          data: {
-            name: data.name,
-            type: data.type,
-            age: data.age,
-            weight: data.weight,
-            neutering: data.neutering,
-            male: data.male,
-            species: data.species,
-            body: data.body,
-          },
-          files: {
-            photo: files.file,
-          },
-        }
+        data
       );
 
       ctx.send("Update Pet Success");

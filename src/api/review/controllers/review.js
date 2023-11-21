@@ -233,19 +233,21 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
     ) {
       const files = ctx.request.files;
 
+      let data = {
+        data: { body, star, reservation: reservationId },
+      };
+
+      if (Object.keys(files).length !== 0) {
+        data = {
+          data: { body, star, reservation: reservationId },
+          files: { photos: files.file },
+        };
+      }
+
       try {
         const newReview = await strapi.entityService.create(
           "api::review.review",
-          {
-            data: {
-              body,
-              star,
-              reservation: reservationId,
-            },
-            files: {
-              photos: files.file,
-            },
-          }
+          data
         );
         ctx.send("Create Review Success");
       } catch (e) {
@@ -257,7 +259,7 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
   },
 
   async update(ctx) {
-    const reviewId = +ctx.request.params.id;
+    const reviewId = +ctx.params.id;
     const { reservationId, body, star } = JSON.parse(ctx.request.body.data);
     const files = ctx.request.files;
 
@@ -281,18 +283,21 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
       reservation.review &&
       reservation.review.id === reviewId
     ) {
+      let data = {
+        data: { body, star, reservation: reservationId },
+      };
+
+      if (Object.keys(files).length !== 0) {
+        data = {
+          data: { body, star, reservation: reservationId },
+          files: { photos: files.file },
+        };
+      }
       try {
         const updatedReview = await strapi.entityService.update(
           "api::review.review",
           reviewId,
-          {
-            data: {
-              body,
-              star,
-              reservation: reservationId,
-            },
-            files: { photos: files.file },
-          }
+          data
         );
         ctx.send("Update Review Success");
       } catch (e) {
