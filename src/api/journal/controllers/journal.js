@@ -43,6 +43,8 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
                 ],
               },
             },
+            start: (+ctx.request.query.page - 1) * +ctx.request.query.size || 0,
+            limit: +ctx.request.query.page * +ctx.request.query.size || 0,
           }
         );
 
@@ -119,7 +121,7 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
         ) {
           const petNames = journal.reservation.pets.map((pet) => pet.name);
           const petPhotos = journal.reservation.pets.map(
-            (pet) => pet.photo.formats.thumbnail.url
+            (pet) => pet.photo && pet.photo.formats.thumbnail.url
           );
 
           const response = {
@@ -130,7 +132,9 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
             createdAt: journal.createdAt,
             lastModifiedAt: journal.updatedAt,
             body: journal.body,
-            photos: journal.photos,
+            photos:
+              journal.photos &&
+              journal.photos.map((photo) => photo.formats.thumbnail.url),
             petNames: petNames,
             petPhotos: petPhotos,
             petsitterName: journal.reservation.petsitter.username,

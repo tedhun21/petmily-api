@@ -348,7 +348,7 @@ module.exports = (plugin) => {
           ctx.state.user.id,
           {
             populate: {
-              likes: true,
+              likes: { fields: ["id"] },
             },
           }
         );
@@ -357,26 +357,33 @@ module.exports = (plugin) => {
           (likes) => likes.id === +ctx.params.petsitterId
         );
 
+        console.log(likesIndex);
+
         let isLiked;
 
         if (likesIndex !== -1) {
           // 찜 목록에 있다면 찜 해제
           isLiked = false;
+
+          await strapi.entityService.update(
+            "plugin::users-permissions.user",
+            +ctx.state.user.id,
+            { data: { likes: { disconnect: [+ctx.params.petsitterId] } } }
+          );
         } else {
           // 찜 목록에 없다면 찜하기
           isLiked = true;
-        }
 
-        // 사용자 정보 업데이트
-        await strapi.entityService.update(
-          "plugin::users-permissions.user",
-          +ctx.state.user.id,
-          {
-            data: {
-              likes: [...currentUser.likes, +ctx.params.petsitterId],
-            },
-          }
-        );
+          await strapi.entityService.update(
+            "plugin::users-permissions.user",
+            +ctx.state.user.id,
+            {
+              data: {
+                likes: [+ctx.params.petsitterId],
+              },
+            }
+          );
+        }
 
         ctx.send({ data: isLiked }); // 찜 상태 반환
       } catch (e) {

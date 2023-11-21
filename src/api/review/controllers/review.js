@@ -44,12 +44,13 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
             : null,
           reservationId: review.reservation.id,
           reservationAddress: review.reservation.address,
-          petNames: review.reservation.pets
-            ? review.reservation.pets.map((pet) => pet.name)
-            : null,
+          petNames: review.reservation.pets.map((pet) => pet && pet.name),
+          petPhotos: review.reservation.pets.map(
+            (pet) => pet.photo && pet.photo
+          ),
           reviewPhotos: review.photos
-            ? review.photos.map((photo) => photo?.formats?.thumbnail?.url)
-            : null,
+            ? review.photos.map((photo) => photo && photo.formats.thumbnail.url)
+            : [],
           body: review.body,
           petsitterId: review.reservation.petsitter
             ? review.reservation.petsitter.id
@@ -117,12 +118,13 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
             : null,
           reservationId: review.reservation.id,
           reservationAddress: review.reservation.address,
-          petNames: review.reservation.pets
-            ? review.reservation.pets.map((pet) => pet.name)
-            : null,
+          petNames: review.reservation.pets.map((pet) => pet && pet.name),
+          petPhotos: review.reservation.pets.map(
+            (pet) => pet.photo && pet.photo
+          ),
           reviewPhotos: review.photos
-            ? review.photos.map((photo) => photo?.formats?.thumbnail?.url)
-            : null,
+            ? review.photos.map((photo) => photo && photo.formats.thumbnail.url)
+            : [],
           body: review.body,
           petsitterId: review.reservation.petsitter
             ? review.reservation.petsitter.id
@@ -259,7 +261,7 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
   },
 
   async update(ctx) {
-    const reviewId = +ctx.params.id;
+    const reviewId = ctx.params.id;
     const { reservationId, body, star } = JSON.parse(ctx.request.body.data);
     const files = ctx.request.files;
 
@@ -281,7 +283,7 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
     } else if (
       ctx.state.user.id === reservation.client.id &&
       reservation.review &&
-      reservation.review.id === reviewId
+      reservation.review.id === +reviewId
     ) {
       let data = {
         data: { body, star, reservation: reservationId },
