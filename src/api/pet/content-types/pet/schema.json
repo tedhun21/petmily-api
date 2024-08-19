@@ -44,11 +44,7 @@
       "type": "text",
       "maxLength": 255
     },
-    "male": {
-      "type": "boolean",
-      "required": true
-    },
-    "neutering": {
+    "neutered": {
       "type": "boolean",
       "required": true
     },
@@ -63,7 +59,7 @@
         "audios"
       ]
     },
-    "user": {
+    "owner": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
@@ -74,6 +70,13 @@
       "relation": "manyToOne",
       "target": "api::reservation.reservation",
       "inversedBy": "pets"
+    },
+    "gender": {
+      "type": "enumeration",
+      "enum": [
+        "MALE",
+        "FEMALE"
+      ]
     }
   }
 }

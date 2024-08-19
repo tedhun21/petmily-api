@@ -154,7 +154,8 @@
           "deprecated": false,
           "required": false,
           "schema": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           },
           "style": "deepObject"
         },
@@ -331,9 +332,7 @@
         }
       ],
       "operationId": "get/reservations/{id}"
-    }
-  },
-  "/reservations/{reservationId}/confirm": {
+    },
     "put": {
       "responses": {
         "200": {
@@ -402,7 +401,7 @@
       ],
       "parameters": [
         {
-          "name": "reservationId",
+          "name": "id",
           "in": "path",
           "description": "",
           "deprecated": false,
@@ -412,7 +411,7 @@
           }
         }
       ],
-      "operationId": "put/reservations/{reservationId}/confirm",
+      "operationId": "put/reservations/{id}",
       "requestBody": {
         "required": true,
         "content": {
@@ -423,17 +422,16 @@
           }
         }
       }
-    }
-  },
-  "/reservations/{reservationId}/petsittercancel": {
-    "put": {
+    },
+    "delete": {
       "responses": {
         "200": {
           "description": "OK",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReservationResponse"
+                "type": "integer",
+                "format": "int64"
               }
             }
           }
@@ -494,7 +492,7 @@
       ],
       "parameters": [
         {
-          "name": "reservationId",
+          "name": "id",
           "in": "path",
           "description": "",
           "deprecated": false,
@@ -504,272 +502,7 @@
           }
         }
       ],
-      "operationId": "put/reservations/{reservationId}/petsittercancel",
-      "requestBody": {
-        "required": true,
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ReservationRequest"
-            }
-          }
-        }
-      }
-    }
-  },
-  "/reservations/{reservationId}/membercancel": {
-    "put": {
-      "responses": {
-        "200": {
-          "description": "OK",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReservationResponse"
-              }
-            }
-          }
-        },
-        "400": {
-          "description": "Bad Request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "401": {
-          "description": "Unauthorized",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "403": {
-          "description": "Forbidden",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "404": {
-          "description": "Not Found",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "500": {
-          "description": "Internal Server Error",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        }
-      },
-      "tags": [
-        "Reservation"
-      ],
-      "parameters": [
-        {
-          "name": "reservationId",
-          "in": "path",
-          "description": "",
-          "deprecated": false,
-          "required": true,
-          "schema": {
-            "type": "number"
-          }
-        }
-      ],
-      "operationId": "put/reservations/{reservationId}/membercancel",
-      "requestBody": {
-        "required": true,
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ReservationRequest"
-            }
-          }
-        }
-      }
-    }
-  },
-  "/reservations/petsitters": {
-    "post": {
-      "responses": {
-        "200": {
-          "description": "OK",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReservationResponse"
-              }
-            }
-          }
-        },
-        "400": {
-          "description": "Bad Request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "401": {
-          "description": "Unauthorized",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "403": {
-          "description": "Forbidden",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "404": {
-          "description": "Not Found",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "500": {
-          "description": "Internal Server Error",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        }
-      },
-      "tags": [
-        "Reservation"
-      ],
-      "parameters": [],
-      "operationId": "post/reservations/petsitters",
-      "requestBody": {
-        "required": true,
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ReservationRequest"
-            }
-          }
-        }
-      }
-    }
-  },
-  "/reservations/schedule/{petsitterId}": {
-    "get": {
-      "responses": {
-        "200": {
-          "description": "OK",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReservationResponse"
-              }
-            }
-          }
-        },
-        "400": {
-          "description": "Bad Request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "401": {
-          "description": "Unauthorized",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "403": {
-          "description": "Forbidden",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "404": {
-          "description": "Not Found",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        },
-        "500": {
-          "description": "Internal Server Error",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Error"
-              }
-            }
-          }
-        }
-      },
-      "tags": [
-        "Reservation"
-      ],
-      "parameters": [
-        {
-          "name": "petsitterId",
-          "in": "path",
-          "description": "",
-          "deprecated": false,
-          "required": true,
-          "schema": {
-            "type": "number"
-          }
-        }
-      ],
-      "operationId": "get/reservations/schedule/{petsitterId}"
+      "operationId": "delete/reservations/{id}"
     }
   }
 }

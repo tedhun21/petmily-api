@@ -65,21 +65,16 @@
       "inversedBy": "users",
       "configurable": false
     },
-    "nickName": {
+    "nickname": {
       "type": "string",
       "required": true,
       "maxLength": 10,
-      "minLength": 2
+      "minLength": 2,
+      "unique": true
     },
     "address": {
       "type": "text",
       "required": true
-    },
-    "pets": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::pet.pet",
-      "mappedBy": "user"
     },
     "photo": {
       "type": "media",
@@ -102,15 +97,14 @@
       "type": "text",
       "maxLength": 255
     },
-    "possibleTimeStart": {
+    "possibleStartTime": {
       "type": "time"
     },
-    "possibleTimeEnd": {
+    "possibleEndTime": {
       "type": "time"
     },
     "possibleDay": {
-      "type": "string",
-      "maxLength": 5
+      "type": "string"
     },
     "possibleLocation": {
       "type": "string"
@@ -120,7 +114,7 @@
       "enum": [
         "CAT",
         "DOG",
-        "DOGCAT"
+        "CATDOG"
       ]
     },
     "reservations_petsitter": {
@@ -144,6 +138,12 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "likes"
+    },
+    "pets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pet.pet",
+      "mappedBy": "owner"
     }
   }
 }

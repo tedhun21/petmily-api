@@ -12,11 +12,11 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "reservationTimeStart": {
+    "startTime": {
       "type": "time",
       "required": true
     },
-    "reservationTimeEnd": {
+    "endTime": {
       "type": "time",
       "required": true
     },
@@ -27,10 +27,10 @@
     "progress": {
       "type": "enumeration",
       "enum": [
-        "RESERVATION_REQUEST",
-        "RESERVATION_CONFIRMED",
-        "RESERVATION_CANCELLED",
-        "FINISH_CARING"
+        "PENDING",
+        "CONFIRMED",
+        "CANCELED",
+        "FINISHED"
       ],
       "required": true
     },
@@ -62,7 +62,7 @@
       "type": "text",
       "maxLength": 255
     },
-    "reservationDate": {
+    "date": {
       "type": "date",
       "required": true
     },
