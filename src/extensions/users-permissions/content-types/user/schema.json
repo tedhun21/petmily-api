@@ -14,7 +14,7 @@
   "attributes": {
     "username": {
       "type": "string",
-      "minLength": 3,
+      "minLength": 2,
       "unique": true,
       "configurable": false,
       "required": true
@@ -109,14 +109,6 @@
     "possibleLocation": {
       "type": "string"
     },
-    "possiblePetType": {
-      "type": "enumeration",
-      "enum": [
-        "CAT",
-        "DOG",
-        "CATDOG"
-      ]
-    },
     "reservations_petsitter": {
       "type": "relation",
       "relation": "oneToMany",
@@ -144,6 +136,15 @@
       "relation": "oneToMany",
       "target": "api::pet.pet",
       "mappedBy": "owner"
+    },
+    "detailAddress": {
+      "type": "string"
+    },
+    "possiblePetType": {
+      "type": "string"
+    },
+    "average_rating": {
+      "type": "decimal"
     }
   }
 }

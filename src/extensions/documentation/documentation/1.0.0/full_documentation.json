@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-08-19T14:10:38.811Z"
+    "x-generation-date": "2024-09-05T10:29:12.208Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -1228,14 +1228,6 @@
                                   "possibleLocation": {
                                     "type": "string"
                                   },
-                                  "possiblePetType": {
-                                    "type": "string",
-                                    "enum": [
-                                      "CAT",
-                                      "DOG",
-                                      "CATDOG"
-                                    ]
-                                  },
                                   "reservations_petsitter": {
                                     "type": "object",
                                     "properties": {
@@ -1333,7 +1325,7 @@
                                                 "body": {
                                                   "type": "string"
                                                 },
-                                                "neutered": {
+                                                "neutering": {
                                                   "type": "boolean"
                                                 },
                                                 "photo": {
@@ -1568,6 +1560,16 @@
                                         }
                                       }
                                     }
+                                  },
+                                  "detailAddress": {
+                                    "type": "string"
+                                  },
+                                  "possiblePetType": {
+                                    "type": "string"
+                                  },
+                                  "average_rating": {
+                                    "type": "number",
+                                    "format": "float"
                                   },
                                   "createdAt": {
                                     "type": "string",
@@ -2251,7 +2253,7 @@
               "age",
               "species",
               "weight",
-              "neutered"
+              "neutering"
             ],
             "type": "object",
             "properties": {
@@ -2278,7 +2280,7 @@
               "body": {
                 "type": "string"
               },
-              "neutered": {
+              "neutering": {
                 "type": "boolean"
               },
               "photo": {
@@ -2379,7 +2381,7 @@
           "age",
           "species",
           "weight",
-          "neutered"
+          "neutering"
         ],
         "properties": {
           "type": {
@@ -2405,7 +2407,7 @@
           "body": {
             "type": "string"
           },
-          "neutered": {
+          "neutering": {
             "type": "boolean"
           },
           "photo": {
@@ -3700,7 +3702,7 @@
                                                   "body": {
                                                     "type": "string"
                                                   },
-                                                  "neutered": {
+                                                  "neutering": {
                                                     "type": "boolean"
                                                   },
                                                   "photo": {
@@ -4258,14 +4260,6 @@
                       "possibleLocation": {
                         "type": "string"
                       },
-                      "possiblePetType": {
-                        "type": "string",
-                        "enum": [
-                          "CAT",
-                          "DOG",
-                          "CATDOG"
-                        ]
-                      },
                       "reservations_petsitter": {
                         "type": "object",
                         "properties": {
@@ -4345,6 +4339,16 @@
                             }
                           }
                         }
+                      },
+                      "detailAddress": {
+                        "type": "string"
+                      },
+                      "possiblePetType": {
+                        "type": "string"
+                      },
+                      "average_rating": {
+                        "type": "number",
+                        "format": "float"
                       },
                       "createdAt": {
                         "type": "string",
@@ -5826,7 +5830,7 @@
                                                   "body": {
                                                     "type": "string"
                                                   },
-                                                  "neutered": {
+                                                  "neutering": {
                                                     "type": "boolean"
                                                   },
                                                   "photo": {
@@ -6384,14 +6388,6 @@
                       "possibleLocation": {
                         "type": "string"
                       },
-                      "possiblePetType": {
-                        "type": "string",
-                        "enum": [
-                          "CAT",
-                          "DOG",
-                          "CATDOG"
-                        ]
-                      },
                       "reservations_petsitter": {
                         "type": "object",
                         "properties": {
@@ -6471,6 +6467,16 @@
                             }
                           }
                         }
+                      },
+                      "detailAddress": {
+                        "type": "string"
+                      },
+                      "possiblePetType": {
+                        "type": "string"
+                      },
+                      "average_rating": {
+                        "type": "number",
+                        "format": "float"
                       },
                       "createdAt": {
                         "type": "string",
@@ -7822,14 +7828,6 @@
                                   "possibleLocation": {
                                     "type": "string"
                                   },
-                                  "possiblePetType": {
-                                    "type": "string",
-                                    "enum": [
-                                      "CAT",
-                                      "DOG",
-                                      "CATDOG"
-                                    ]
-                                  },
                                   "reservations_petsitter": {
                                     "type": "object",
                                     "properties": {
@@ -7927,7 +7925,7 @@
                                                 "body": {
                                                   "type": "string"
                                                 },
-                                                "neutered": {
+                                                "neutering": {
                                                   "type": "boolean"
                                                 },
                                                 "photo": {
@@ -8162,6 +8160,16 @@
                                         }
                                       }
                                     }
+                                  },
+                                  "detailAddress": {
+                                    "type": "string"
+                                  },
+                                  "possiblePetType": {
+                                    "type": "string"
+                                  },
+                                  "average_rating": {
+                                    "type": "number",
+                                    "format": "float"
                                   },
                                   "createdAt": {
                                     "type": "string",

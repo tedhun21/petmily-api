@@ -11,34 +11,18 @@ export default factories.createCoreController("api::pet.pet", ({ strapi }) => ({
     }
 
     const { id: userId } = ctx.state.user;
-    const { size, page } = ctx.params;
+    const { page, pageSize } = ctx.params;
 
     try {
       const pets = await strapi.entityService.findPage("api::pet.pet", {
         filters: { owner: { $eq: userId } },
         populate: { photo: { fields: ["id", "url"] } },
         page,
-        pageSize: size,
+        pageSize,
       });
 
-      const modifiedPets = pets.results.map((pet) => ({
-        petId: pet.id,
-        name: pet.name,
-        type: pet.type,
-        age: pet.age,
-        species: pet.species,
-        weight: pet.weight,
-        body: pet.body,
-        male: pet.male,
-        neutering: pet.neutering,
-        createdAt: pet.createdAt,
-        lastModifiedAt: pet.updatedAt,
-        photo: pet.photo && pet.photo,
-      }));
-
-      return ctx.send({ pets: modifiedPets, pagination: pets.pagination });
+      return ctx.send(pets);
     } catch (e) {
-      console.error(e);
       return ctx.badRequest("Fail to fetch pets");
     }
   },
@@ -59,23 +43,9 @@ export default factories.createCoreController("api::pet.pet", ({ strapi }) => ({
         return ctx.notFound("Pet is not found"); //// pet이 null인 경우 404 에러 반환
       }
 
-      const modifiedPet = {
-        id: pet.id,
-        name: pet.name,
-        type: pet.type,
-        age: pet.age,
-        species: pet.species,
-        weight: pet.weight,
-        body: pet.body,
-        gender: pet.gender,
-        neutered: pet.neutering,
-        photo: pet.photo && pet.photo,
-        owner: pet.user,
-      };
-
-      return ctx.send(modifiedPet);
+      return ctx.send(pet);
     } catch (e) {
-      console.error(e);
+      return ctx.badRequest("Fail to fetch a pet");
     }
   },
 
@@ -86,7 +56,7 @@ export default factories.createCoreController("api::pet.pet", ({ strapi }) => ({
     }
 
     const { id: userId } = ctx.state.user;
-    const { type, name, age, species, weight, body, gender, neutered } =
+    const { type, name, age, species, weight, body, gender, neutering } =
       JSON.parse(ctx.request.body.data);
 
     const { file } = ctx.request.files;
@@ -94,17 +64,10 @@ export default factories.createCoreController("api::pet.pet", ({ strapi }) => ({
     try {
       let data = {
         data: {
-          name,
-          type,
-          age,
-          weight,
-          neutered,
-          gender,
-          species,
-          body,
-          user: userId,
+          ...JSON.parse(ctx.request.body.data),
+          owner: { connect: [userId] },
+          files: file ? { photo: file } : null,
         },
-        files: file ? { photo: file } : null,
       };
 
       const newPet = await strapi.entityService.create("api::pet.pet", data);

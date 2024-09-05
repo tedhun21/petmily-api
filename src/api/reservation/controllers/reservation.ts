@@ -105,31 +105,32 @@ export default factories.createCoreController(
 
       const { id: userId, role } = ctx.state.user;
       const { petId, petsitterId } = ctx.request.body;
+      console.log(ctx.request.body);
 
-      if (role.type === "public") {
-        let data = {
-          data: {
-            ...ctx.request.body,
-            pets: { connect: petId },
-            client: { connect: [userId] },
-            petsitter: { connect: [petsitterId] },
-            progress: "REQUEST",
-          },
-        };
+      // if (role.type === "public") {
+      //   let data = {
+      //     data: {
+      //       ...ctx.request.body,
+      //       pets: { connect: petId },
+      //       client: { connect: [userId] },
+      //       petsitter: { connect: [petsitterId] },
+      //       progress: "REQUEST",
+      //     },
+      //   };
 
-        try {
-          const newReservation = await strapi.entityService.create(
-            "api::reservation.reservation",
-            data
-          );
-          return ctx.send({
-            message: "Successfully create a reservation",
-            id: newReservation.id,
-          });
-        } catch (e) {
-          return ctx.badRequest("Fail to create a reservation8u");
-        }
-      }
+      //   try {
+      //     const newReservation = await strapi.entityService.create(
+      //       "api::reservation.reservation",
+      //       data
+      //     );
+      //     return ctx.send({
+      //       message: "Successfully create a reservation",
+      //       id: newReservation.id,
+      //     });
+      //   } catch (e) {
+      //     return ctx.badRequest("Fail to create a reservation8u");
+      //   }
+      // }
     },
 
     // 예약 수정 (O)
@@ -184,68 +185,6 @@ export default factories.createCoreController(
         }
       } catch (e) {
         return ctx.badRequest("Fail to update the reservation");
-      }
-    },
-
-    // 예약 가능 펫시터 찾기 (O)
-    async findPossiblePetsitter(ctx) {
-      const { date, startTime, endTime, address, petId, page, size } =
-        ctx.query;
-
-      let filters = { role: { type: { $eq: "petsitter" } } } as any;
-      if (date) {
-        filters.possibleDay = {
-          $contains: new Date(date).toLocaleDateString("en", {
-            weekday: "short",
-          }),
-        };
-      }
-
-      if (startTime && endTime) {
-        filters.startTime = { $gte: startTime };
-        filters.endTime = { $lt: endTime };
-      }
-
-      if (address) {
-        filters.address = { $contains: address.split(" ") };
-      }
-
-      if (petId) {
-        try {
-          const pet = await strapi.entityService.findOne(
-            "api::pet.pet",
-            +petId
-          );
-
-          filters.possiblePetType = { $contains: [pet.type] };
-        } catch (e) {}
-      }
-
-      try {
-        const petsitters = await strapi.entityService.findPage(
-          "plugin::users-permissions.user",
-          {
-            filters,
-            fields: [
-              "username",
-              "email",
-              "address",
-              "body",
-              "phone",
-              "possibleDay",
-              "possibleLocation",
-              "possiblePetType",
-              "possibleStartTime",
-              "possibleEndTime",
-            ],
-            page,
-            pageSize: size,
-          }
-        );
-
-        return ctx.send(petsitters);
-      } catch (e) {
-        return ctx.badRequest("Fail to fetch petsitters");
       }
     },
   })

@@ -14,7 +14,7 @@ module.exports = (plugin) => {
         userId,
         {
           populate: {
-            photo: true,
+            photo: { fields: ["id", "url"] },
             role: { fields: ["type"] },
           },
         }
@@ -28,6 +28,8 @@ module.exports = (plugin) => {
           username: me.username,
           nickname: me.nickname,
           address: me.address,
+          detailAddress: me.detailAddress,
+          phone: me.phone,
           photo: me.photo,
           body: me.body,
           isPetsitter: false,
@@ -176,7 +178,7 @@ module.exports = (plugin) => {
         userId,
         {
           populate: {
-            photo: true,
+            photo: { fields: ["id", "url"] },
             role: { fields: ["type"] },
             pets: true,
           },
@@ -263,7 +265,7 @@ module.exports = (plugin) => {
             ...ctx.request.body,
             provider: "local",
             role: {
-              connect: [ctx.request.body.isPetsitter ? 3 : 2],
+              connect: [isPetsitter ? 3 : 2],
             },
           },
         }
@@ -274,6 +276,7 @@ module.exports = (plugin) => {
         id: newMember.id,
       });
     } catch (e) {
+      console.log(e);
       return ctx.badRequest("Fail to create a user");
     }
   };
@@ -281,21 +284,27 @@ module.exports = (plugin) => {
   // 유저 수정 (O)
   plugin.controllers.user.update = async (ctx) => {
     if (!ctx.state.user) {
-      return ctx.authorized("Token is not validated");
+      return ctx.unauthorized("Token is not validated");
     }
 
     const { id: userId } = ctx.state.user;
     const { id: paramId } = ctx.params;
 
+    const { file } = ctx.request.files;
+
     if (userId === +paramId) {
       let data = {
-        ...ctx.request.body,
+        data: {
+          ...JSON.parse(ctx.request.body.data),
+        },
+        files: file ? { photo: file } : null,
       };
+
       try {
         const updatedUser = await strapi.entityService.update(
           "plugin::users-permissions.user",
           userId,
-          { data }
+          data
         );
 
         return ctx.send({
@@ -408,6 +417,7 @@ module.exports = (plugin) => {
     }
 
     const { id: userId } = ctx.state.user;
+    const { page, size } = ctx.query;
 
     try {
       const user = await strapi.entityService.findOne(
@@ -416,7 +426,10 @@ module.exports = (plugin) => {
         {
           populate: {
             likes: {
+              limit: size,
+              start: (page - 1) * size,
               populate: {
+                photo: { fields: ["id", "url"] },
                 reservations_petsitter: {
                   populate: { review: { fields: ["star"] } },
                 },
@@ -426,43 +439,115 @@ module.exports = (plugin) => {
         }
       );
 
-      const modifiedUsers = user.likes.map((user) => ({
-        id: user.id,
-        email: user.email,
-        name: user.username,
-        nickname: user.nickname,
-        phone: user.phone,
-        address: user.address,
-        photo: user.photo,
-        possiblePetType: user.possiblePetType,
-        possibleLocation: user.possibleLocation,
-        possibleDay: user.possibleDay,
-        possibleStartTime: user.possibleStartTime,
-        possibleEndTime: user.possibleEndTime,
-        body: user.body,
-        star:
-          Math.ceil(
-            (user.reservations_petsitter
-              .map((reservation) => reservation.review.star)
-              .reduce((acc, cur) => acc + cur, 0) /
-              user.reservations_petsitter.length) *
-              10
-          ) / 10,
-        reviewCount: user.reservations_petsitter.filter(
-          (reservation) => reservation.review
-        ).length,
-      }));
+      const modifiedPetsitters = user.likes.map((petsitter) => {
+        const reservations = petsitter.reservations_petsitter || [];
 
-      return ctx.send(modifiedUsers);
+        // Calculate the star rating
+        const totalStars = reservations
+          .filter(
+            (reservation) => reservation.review && reservation.review.star
+          )
+          .reduce((acc, cur) => acc + cur.review.star, 0);
+
+        const reviewCount = reservations.filter(
+          (reservation) => reservation.review
+        ).length;
+
+        // Avoid division by zero
+        const averageStar =
+          reviewCount > 0 ? Math.ceil((totalStars / reviewCount) * 10) / 10 : 0;
+        return {
+          id: petsitter.id,
+          email: petsitter.email,
+          username: petsitter.username,
+          nickname: petsitter.nickname,
+          phone: petsitter.phone,
+          address: petsitter.address,
+          photo: petsitter.photo,
+          possiblePetType: petsitter.possiblePetType,
+          possibleLocation: petsitter.possibleLocation,
+          possibleDay: petsitter.possibleDay,
+          possibleStartTime: petsitter.possibleStartTime,
+          possibleEndTime: petsitter.possibleEndTime,
+          body: petsitter.body,
+          star: averageStar,
+          reviewCount: reviewCount,
+        };
+      });
+
+      return ctx.send(modifiedPetsitters);
     } catch (e) {
       return ctx.badRequest("Fail to fetch favorites");
+    }
+  };
+
+  // 필터에 맞는 펫시터 조회
+  plugin.controllers.user.possiblePetsitter = async (ctx) => {
+    const { date, startTime, endTime, address, petType, page, pageSize } =
+      ctx.query;
+
+    let filters = { role: { type: { $eq: "petsitter" } } } as any;
+
+    if (date) {
+      filters.possibleDay = {
+        $contains: new Date(date).toLocaleDateString("ko", {
+          weekday: "short",
+        }),
+      };
+    }
+
+    if (startTime && endTime) {
+      filters.possibleStartTime = { $lte: startTime };
+      filters.possibleEndTime = { $gte: endTime };
+    }
+
+    if (address) {
+      // 예) "서울시 용산구"
+      filters.possibleLocation = { $contains: address };
+    }
+
+    if (petType) {
+      // Convert petType from a comma-separated string to an array
+      const petTypeArray = petType.split(","); // ["DOG", "CAT"]
+
+      // Apply $contains logic similar to possibleDay, using $or to combine
+      filters.$or = petTypeArray.map((type) => ({
+        possiblePetType: { $contains: type },
+      }));
+    }
+
+    try {
+      const petsitters = await strapi.entityService.findPage(
+        "plugin::users-permissions.user",
+        {
+          filters,
+          populate: { photo: { fields: ["id", "url"] } },
+          fields: [
+            "nickname",
+            "email",
+            "address",
+            "body",
+            "phone",
+            "possibleDay",
+            "possibleLocation",
+            "possiblePetType",
+            "possibleStartTime",
+            "possibleEndTime",
+          ],
+          page,
+          pageSize,
+        }
+      );
+      return ctx.send(petsitters);
+    } catch (e) {
+      return ctx.badRequest("Fail to fetch petsitters");
     }
   };
 
   // 펫시터 찜하기 route
   plugin.routes["content-api"].routes.push({
     method: "PUT",
-    path: "/favorite/:petsitterId",
+    path: "user/favorite/:petsitterId",
     handler: "user.like",
     config: {
       prefix: "",
@@ -472,8 +557,18 @@ module.exports = (plugin) => {
   // 찜한 펫시터 목록 조회
   plugin.routes["content-api"].routes.push({
     method: "GET",
-    path: "/favorite",
+    path: "/user/favorite",
     handler: "user.favorite",
+    config: {
+      prefix: "",
+    },
+  });
+
+  // 필터에 맞는 펫시터 조회 route
+  plugin.routes["content-api"].routes.push({
+    method: "GET",
+    path: "/user/possiblePetsitter",
+    handler: "user.possiblePetsitter",
     config: {
       prefix: "",
     },
@@ -481,3 +576,4 @@ module.exports = (plugin) => {
 
   return plugin;
 };
+``;

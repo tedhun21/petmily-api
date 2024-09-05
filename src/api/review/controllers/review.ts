@@ -8,7 +8,7 @@ export default factories.createCoreController(
   ({ strapi }) => ({
     // 리뷰 조회
     async find(ctx) {
-      const { date, page, size } = ctx.query;
+      const { date, photo, page, size } = ctx.query;
 
       let filters = {} as any;
       if (ctx.state.user) {
@@ -40,17 +40,35 @@ export default factories.createCoreController(
         }
       }
 
+      // 사진이 있는 리뷰만 필터링
+      if (photo === "true") {
+        // ctx.query에서 가져온 값은 문자열이므로 'true'로 비교합니다.
+        filters.photos = { $ne: null }; // 또는 {$not: {$size: 0}} 로 수정
+      }
+
       try {
         const reviews = await strapi.entityService.findPage(
           "api::review.review",
           {
+            sort: { createdAt: "desc" },
             populate: {
               reservation: {
                 populate: {
-                  client: { fields: ["id"] },
-                  petsitter: { fields: ["id"] },
+                  client: {
+                    populate: { photo: { fields: ["id", "url"] } },
+                    fields: ["id", "nickname"],
+                  },
+                  petsitter: {
+                    populate: { photo: { fields: ["id", "url"] } },
+                    fields: ["id", "nickname"],
+                  },
+                  pets: {
+                    populate: { photo: { fields: ["id", "url"] } },
+                    fields: ["id", "name", "type"],
+                  },
                 },
               },
+              photos: { fields: ["id", "url"] },
             },
             filters,
             page,

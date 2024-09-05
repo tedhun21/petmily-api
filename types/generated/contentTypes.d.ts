@@ -748,7 +748,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       Attribute.Required &
       Attribute.Unique &
       Attribute.SetMinMaxLength<{
-        minLength: 3;
+        minLength: 2;
       }>;
     email: Attribute.Email &
       Attribute.Required &
@@ -792,7 +792,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     possibleEndTime: Attribute.Time;
     possibleDay: Attribute.String;
     possibleLocation: Attribute.String;
-    possiblePetType: Attribute.Enumeration<['CAT', 'DOG', 'CATDOG']>;
     reservations_petsitter: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
@@ -814,6 +813,9 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::pet.pet'
     >;
+    detailAddress: Attribute.String;
+    possiblePetType: Attribute.String;
+    average_rating: Attribute.Decimal;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -902,7 +904,7 @@ export interface ApiPetPet extends Schema.CollectionType {
       Attribute.SetMinMaxLength<{
         maxLength: 255;
       }>;
-    neutered: Attribute.Boolean & Attribute.Required;
+    neutering: Attribute.Boolean & Attribute.Required;
     photo: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     owner: Attribute.Relation<
       'api::pet.pet',
