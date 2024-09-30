@@ -71,6 +71,9 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "reservations_petsitter"
+    },
+    "detailAddress": {
+      "type": "string"
     }
   }
 }

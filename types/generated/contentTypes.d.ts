@@ -976,6 +976,7 @@ export interface ApiReservationReservation extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+    detailAddress: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

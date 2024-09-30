@@ -1,5 +1,5 @@
 module.exports = (plugin) => {
-  // 나의 정보 (O)
+  // 나의 정보
   plugin.controllers.user.me = async (ctx) => {
     if (!ctx.state.user) {
       return ctx.unauthorized("Token is not validated");
@@ -168,7 +168,7 @@ module.exports = (plugin) => {
     }
   };
 
-  // 유저 1명 조회 (O)
+  // 유저 1명 조회
   plugin.controllers.user.findOne = async (ctx) => {
     const { id: userId } = ctx.params;
 
@@ -180,26 +180,27 @@ module.exports = (plugin) => {
           populate: {
             photo: { fields: ["id", "url"] },
             role: { fields: ["type"] },
-            pets: true,
           },
         }
       );
 
+      // Client
       if (user.role.type === "public") {
         const modifiedUser = {
           id: user.id,
           email: user.email,
           username: user.username,
           nickname: user.nickname,
+          phone: user.phone,
           address: user.address,
           photo: user.photo,
           body: user.body,
           isPetsitter: false,
-          pets: user.pets,
         };
 
         return ctx.send(modifiedUser);
-      } else if (user.role.type === "petsiter") {
+      } else if (user.role.type === "petsitter") {
+        // Petsitter
         const reviews = await strapi.entityService.findPage(
           "api::review.review",
           { filters: { reservation: { petsitter: { id: { $eq: userId } } } } }
@@ -213,6 +214,7 @@ module.exports = (plugin) => {
           phone: user.phone,
           address: user.address,
           photo: user.photo,
+          isPetsitter: true,
           possiblePetType: user.possiblePetType,
           possibleLocation: user.possibleLocation,
           possibleDay: user.possibleDay,
@@ -229,6 +231,8 @@ module.exports = (plugin) => {
             ) / 10,
           reviewCount: reviews.pagination.total,
         };
+
+        console.log(modifiedPetsitter);
         return ctx.send(modifiedPetsitter);
       }
 
@@ -238,7 +242,7 @@ module.exports = (plugin) => {
     }
   };
 
-  // 유저 생성 (O)
+  // 유저 생성
   plugin.controllers.auth.register = async (ctx) => {
     const { username, nickname, email, address, password, phone, isPetsitter } =
       ctx.request.body;
@@ -281,7 +285,7 @@ module.exports = (plugin) => {
     }
   };
 
-  // 유저 수정 (O)
+  // 유저 수정
   plugin.controllers.user.update = async (ctx) => {
     if (!ctx.state.user) {
       return ctx.unauthorized("Token is not validated");
@@ -319,7 +323,7 @@ module.exports = (plugin) => {
     }
   };
 
-  // 유저 삭제 (O)
+  // 유저 삭제
   plugin.controllers.user.destroy = async (ctx) => {
     if (!ctx.state.user || ctx.state.user !== +ctx.params.id) {
       return ctx.unauthorized("Token is not validated");
@@ -344,7 +348,7 @@ module.exports = (plugin) => {
     }
   };
 
-  // 펫시터 찜하기 (O)
+  // 펫시터 찜하기
   plugin.controllers.user.like = async (ctx) => {
     if (!ctx.state.user) {
       return ctx.unauthorized("Token is not validated");
@@ -410,14 +414,14 @@ module.exports = (plugin) => {
     }
   };
 
-  // 찜한 펫시터 목록 조회 (O)
-  plugin.controllers.user.favorite = async (ctx) => {
+  // 찜한 펫시터 목록 조회
+  plugin.controllers.user.favoritePetsitter = async (ctx) => {
     if (!ctx.state.user) {
       return ctx.unauthorized("Token is not validated");
     }
 
     const { id: userId } = ctx.state.user;
-    const { page, size } = ctx.query;
+    const { page, pageSize } = ctx.query;
 
     try {
       const user = await strapi.entityService.findOne(
@@ -426,13 +430,13 @@ module.exports = (plugin) => {
         {
           populate: {
             likes: {
-              limit: size,
-              start: (page - 1) * size,
+              start: (page - 1) * pageSize, // Apply pagination here
+              limit: pageSize,
               populate: {
                 photo: { fields: ["id", "url"] },
-                reservations_petsitter: {
-                  populate: { review: { fields: ["star"] } },
-                },
+                // reservations_petsitter: {
+                //   populate: { review: { fields: ["star"] } },
+                // },
               },
             },
           },
@@ -443,19 +447,20 @@ module.exports = (plugin) => {
         const reservations = petsitter.reservations_petsitter || [];
 
         // Calculate the star rating
-        const totalStars = reservations
-          .filter(
-            (reservation) => reservation.review && reservation.review.star
-          )
-          .reduce((acc, cur) => acc + cur.review.star, 0);
+        // const totalStars = reservations
+        //   .filter(
+        //     (reservation) => reservation.review && reservation.review.star
+        //   )
+        //   .reduce((acc, cur) => acc + cur.review.star, 0);
 
-        const reviewCount = reservations.filter(
-          (reservation) => reservation.review
-        ).length;
+        // const reviewCount = reservations.filter(
+        //   (reservation) => reservation.review
+        // ).length;
 
         // Avoid division by zero
-        const averageStar =
-          reviewCount > 0 ? Math.ceil((totalStars / reviewCount) * 10) / 10 : 0;
+        // const averageStar =
+        //   reviewCount > 0 ? Math.ceil((totalStars / reviewCount) * 10) / 10 : 0;
+
         return {
           id: petsitter.id,
           email: petsitter.email,
@@ -470,8 +475,8 @@ module.exports = (plugin) => {
           possibleStartTime: petsitter.possibleStartTime,
           possibleEndTime: petsitter.possibleEndTime,
           body: petsitter.body,
-          star: averageStar,
-          reviewCount: reviewCount,
+          // star: averageStar,
+          // reviewCount: reviewCount,
         };
       });
 
@@ -544,6 +549,62 @@ module.exports = (plugin) => {
     }
   };
 
+  // 이용한 펫시터 조회
+  plugin.controllers.user.usedPetsitter = async (ctx) => {
+    if (!ctx.state.user) {
+      return ctx.unauthorized("Token is not validated");
+    }
+
+    // reservation을 검색한 다음에 client가 나인 예약을 찾고 그 예약에서 펫시터만 모아서 pagination
+    const { id: userId } = ctx.state.user;
+    const { pageSize, page } = ctx.query;
+
+    try {
+      const relatedReservations = await strapi.entityService.findPage(
+        "api::reservation.reservation",
+        {
+          sort: { createdAt: "desc" },
+          filters: { client: { id: { $eq: userId } } },
+          populate: {
+            petsitter: {
+              fields: [
+                "id",
+                "nickname",
+                "body",
+                "possibleDay",
+                "possibleStartTime",
+                "possibleEndTime",
+                "possibleLocation",
+                "phone",
+              ],
+            },
+          },
+          page,
+          pageSize,
+        }
+      );
+
+      const seenPetsitterIds = [];
+
+      const uniquePetsitters = relatedReservations.results
+        .map((reservation) => reservation.petsitter)
+        .filter((petsitter) => {
+          if (seenPetsitterIds.indexOf(petsitter.id) === -1) {
+            seenPetsitterIds.push(petsitter.id); // Track this petsitter's id
+            return true; // Keep this petsitter
+          }
+          return false; // Filter out duplicate petsitter
+        });
+
+      return ctx.send({
+        results: uniquePetsitters,
+        pagination: relatedReservations.pagination,
+      });
+    } catch (e) {
+      return ctx.badRequest("Fail to fetch petsitter");
+    }
+  };
+
   // 펫시터 찜하기 route
   plugin.routes["content-api"].routes.push({
     method: "PUT",
@@ -557,8 +618,8 @@ module.exports = (plugin) => {
   // 찜한 펫시터 목록 조회
   plugin.routes["content-api"].routes.push({
     method: "GET",
-    path: "/user/favorite",
-    handler: "user.favorite",
+    path: "/user/favoritePetsitter",
+    handler: "user.favoritePetsitter",
     config: {
       prefix: "",
     },
@@ -569,6 +630,16 @@ module.exports = (plugin) => {
     method: "GET",
     path: "/user/possiblePetsitter",
     handler: "user.possiblePetsitter",
+    config: {
+      prefix: "",
+    },
+  });
+
+  // 내가 이용한 펫시터 조회 route
+  plugin.routes["content-api"].routes.push({
+    method: "GET",
+    path: "/user/usedPetsitter",
+    handler: "user.usedPetsitter",
     config: {
       prefix: "",
     },

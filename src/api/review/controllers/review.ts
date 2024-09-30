@@ -8,7 +8,7 @@ export default factories.createCoreController(
   ({ strapi }) => ({
     // 리뷰 조회
     async find(ctx) {
-      const { date, photo, page, size } = ctx.query;
+      const { date, photo, page, pageSize } = ctx.query;
 
       let filters = {} as any;
       if (ctx.state.user) {
@@ -72,7 +72,7 @@ export default factories.createCoreController(
             },
             filters,
             page,
-            pageSize: size,
+            pageSize,
           }
         );
 

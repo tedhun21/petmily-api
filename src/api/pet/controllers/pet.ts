@@ -11,7 +11,7 @@ export default factories.createCoreController("api::pet.pet", ({ strapi }) => ({
     }
 
     const { id: userId } = ctx.state.user;
-    const { page, pageSize } = ctx.params;
+    const { page, pageSize } = ctx.query;
 
     try {
       const pets = await strapi.entityService.findPage("api::pet.pet", {
@@ -27,14 +27,13 @@ export default factories.createCoreController("api::pet.pet", ({ strapi }) => ({
     }
   },
 
-  // pet 하나 조회 (O)
+  // pet 하나 조회
   async findOne(ctx) {
     const { id: petId } = ctx.params;
 
     try {
       const pet = await strapi.entityService.findOne("api::pet.pet", +petId, {
         populate: {
-          user: { fields: ["id", "nickname"] },
           photo: { fields: ["id", "url"] },
         },
       });
@@ -49,7 +48,7 @@ export default factories.createCoreController("api::pet.pet", ({ strapi }) => ({
     }
   },
 
-  // pet 생성 (O)
+  // pet 생성
   async create(ctx) {
     if (!ctx.state.user) {
       return ctx.badRequest("Token is not validated");
@@ -78,7 +77,7 @@ export default factories.createCoreController("api::pet.pet", ({ strapi }) => ({
     }
   },
 
-  // pet 수정 (O)
+  // pet 수정
   async update(ctx) {
     if (!ctx.state.user) {
       return ctx.unauthorized("Token is not validated");
@@ -123,7 +122,7 @@ export default factories.createCoreController("api::pet.pet", ({ strapi }) => ({
     }
   },
 
-  // pet 삭제 (O)
+  // pet 삭제
   async delete(ctx) {
     if (!ctx.state.user) {
       return ctx.unauthorized("Token is not validated");

@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-09-05T10:29:12.208Z"
+    "x-generation-date": "2024-09-30T01:34:38.272Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -2118,6 +2118,9 @@
                           }
                         }
                       },
+                      "detailAddress": {
+                        "type": "string"
+                      },
                       "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -4188,6 +4191,9 @@
                                         }
                                       }
                                     },
+                                    "detailAddress": {
+                                      "type": "string"
+                                    },
                                     "createdAt": {
                                       "type": "string",
                                       "format": "date-time"
@@ -4594,6 +4600,9 @@
                   }
                 ],
                 "example": "string or id"
+              },
+              "detailAddress": {
+                "type": "string"
               }
             }
           }
@@ -6316,6 +6325,9 @@
                                         }
                                       }
                                     },
+                                    "detailAddress": {
+                                      "type": "string"
+                                    },
                                     "createdAt": {
                                       "type": "string",
                                       "format": "date-time"
@@ -6603,6 +6615,9 @@
                 }
               }
             }
+          },
+          "detailAddress": {
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
@@ -8717,6 +8732,9 @@
                             }
                           }
                         }
+                      },
+                      "detailAddress": {
+                        "type": "string"
                       },
                       "createdAt": {
                         "type": "string",
